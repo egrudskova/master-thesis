@@ -1,3 +1,4 @@
 oracledb>=2.0
 pandas
 sqlalchemy
+cx_Oracle

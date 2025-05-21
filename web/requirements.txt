@@ -1,0 +1,4 @@
+streamlit
+pandas
+cx_Oracle
+plotly
