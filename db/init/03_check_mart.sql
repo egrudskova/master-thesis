@@ -18,7 +18,6 @@ SELECT
        WHERE i.order_id = o.order_id )                                   AS "Receipts",
     o.total_amount / 1e6                                                 AS "Sales (million RUB)",
     o.authorizations                                                     AS "Authorizations",
-    o.temperature                                                        AS "Temperature (°C)",
     CASE WHEN o.promo_code_id IS NOT NULL
          THEN 'With Promo'
          ELSE 'No Promo'
