@@ -21,12 +21,12 @@ SELECT
     CASE WHEN o.promo_code_id IS NOT NULL
          THEN 'With Promo'
          ELSE 'No Promo'
-    END                                                                 AS "PromoCode",
-    mc.campaign_name                                                     AS "CampaignName",
-    mc.campaign_type                                                     AS "CampaignType",
-    mc.start_date                                                        AS "CampaignStart",
-    mc.end_date                                                          AS "CampaignEnd",
-    mc.target_audience                                                   AS "TargetAudience"
+    END                                                                 AS "Promo Code",
+    mc.campaign_name                                                     AS "Campaign Name",
+    mc.campaign_type                                                     AS "Campaign Type",
+    mc.start_date                                                        AS "Campaign Start",
+    mc.end_date                                                          AS "Campaign End",
+    mc.target_audience                                                   AS "Target Audience"
 FROM ORDERS o
 JOIN STORES s                ON s.store_id      = o.store_id
 LEFT JOIN MARKETING_CAMPAIGNS mc
