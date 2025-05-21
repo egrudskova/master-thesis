@@ -21,7 +21,7 @@ SELECT
     CASE WHEN o.promo_code_id IS NOT NULL
          THEN 'With Promo'
          ELSE 'No Promo'
-    END                                                                 AS "Promo Code",
+    END                                                                 AS "Promocode",
     mc.campaign_name                                                     AS "Campaign Name",
     mc.campaign_type                                                     AS "Campaign Type",
     mc.start_date                                                        AS "Campaign Start",
