@@ -1,24 +1,12 @@
-import os
 from datetime import datetime
-import streamlit as st
+
 import pandas as pd
-import plotly.graph_objects as go
 import plotly.express as px
-import oracledb as cx_Oracle
+import plotly.graph_objects as go
+import streamlit as st
 
-
-def get_db_connection():
-    dsn = cx_Oracle.makedsn(
-        os.getenv("ORACLE_HOST"),
-        int(os.getenv("ORACLE_PORT")),
-        sid=os.getenv("ORACLE_SID")
-    )
-    return cx_Oracle.connect(
-        user=os.getenv("ORACLE_USER"),
-        password=os.getenv("ORACLE_PASSWORD"),
-        dsn=dsn,
-        mode=cx_Oracle.SYSDBA
-    )
+from cache import load_campaign_data
+from db_utils import get_db_connection
 
 
 def load_data(mart_name):
@@ -38,8 +26,9 @@ st.set_page_config(layout="wide", page_title="Marketing Campaign Analytics")
 st.sidebar.header("📊 Data Filter")
 
 max_date = df["Date"].max().date()
-min_date = (max_date - pd.DateOffset(months=3)).date()
-start_date = st.sidebar.date_input("📅 Start date", min_date, min_value=min_date, max_value=max_date)
+min_date = df["Date"].min().date()
+initial_date = (max_date - pd.DateOffset(months=3)).date()
+start_date = st.sidebar.date_input("📅 Start date", initial_date, min_value=min_date, max_value=max_date)
 end_date = st.sidebar.date_input("📅 End date", max_date, min_value=min_date, max_value=max_date)
 
 regions = st.sidebar.multiselect("🌍 Select regions", df["Region"].unique(), default="Moscow")
@@ -135,9 +124,21 @@ st.plotly_chart(fig, use_container_width=True)
 st.subheader("📊 Marketing Campaign Analysis")
 
 campaign_list = pd.concat([df_filtered_curr, df_filtered_prev])["Campaign Name"].unique()
-campaign_list = "No promo during this period" if campaign_list.size == 0 else campaign_list
 
 selected_campaign = st.selectbox("Select a campaign:", campaign_list)
+
+raw_sales = load_campaign_data()
+
+df_sales = pd.DataFrame(raw_sales, columns=["campaign_name", "total_sales"])
+row = df_sales.loc[df_sales["campaign_name"] == selected_campaign]
+
+if not row.empty:
+    total = row["total_sales"].iat[0]
+else:
+    total = 0
+
+st.metric(label=f"Total sales – {selected_campaign}",
+          value=f"{total:,.1f} million RUB")
 
 st.subheader("📊 Promotional Product Sales")
 

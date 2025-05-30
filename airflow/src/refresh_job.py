@@ -1,18 +1,7 @@
 from datetime import datetime
-import cx_Oracle
-import os
 
-def get_db_connection():
-    dsn = cx_Oracle.makedsn(
-        host=os.getenv("ORACLE_HOST", "oracle-db"),
-        port=int(os.getenv("ORACLE_PORT", 1521)),
-        sid=os.getenv("ORACLE_SID", "XE"),
-    )
-    return cx_Oracle.connect(
-        user=os.getenv("ORACLE_USER", "system"),
-        password=os.getenv("ORACLE_PWD", "oracle"),
-        dsn=dsn
-    )
+from db_utils import get_db_connection
+
 
 def get_last_update_date():
     connection = get_db_connection()
@@ -31,22 +20,24 @@ def insert_new_data(last_update_date):
     cursor = connection.cursor()
 
     cursor.execute("""
-        INSERT INTO CHECK_FULL
-        SELECT
-            o.order_date               AS order_date,
-            s.region                   AS region,
-            o.customer_id              AS customers,
-            (SELECT COUNT(*) FROM ORDER_ITEMS i
-             WHERE i.order_id = o.order_id) AS items_count,
-            o.total_amount/1e6         AS revenue_mln,
-            o.authorizations           AS authorizations,
-            o.temperature              AS temperature,
-            CASE WHEN o.promo_code_id IS NOT NULL
-                 THEN 'with_promocode' ELSE 'without_promocode' END AS promo_usage
-        FROM ORDERS o
-        JOIN STORES s ON s.store_id = o.store_id
-        WHERE o.order_date > :last_dt
-    """, last_dt=last_update_date)
+                   INSERT INTO CHECK_FULL
+                   SELECT o.order_date                     AS order_date,
+                          s.region                         AS region,
+                          o.customer_id                    AS customers,
+                          (SELECT COUNT(*)
+                           FROM ORDER_ITEMS i
+                           WHERE i.order_id = o.order_id)  AS items_count,
+                          o.total_amount / 1e6             AS revenue_mln,
+                          o.authorizations                 AS authorizations,
+                          o.temperature                    AS temperature,
+                          CASE
+                              WHEN o.promo_code_id IS NOT NULL
+                                  THEN 'with_promocode'
+                              ELSE 'without_promocode' END AS promo_usage
+                   FROM ORDERS o
+                            JOIN STORES s ON s.store_id = o.store_id
+                   WHERE o.order_date > :last_dt
+                   """, last_dt=last_update_date)
 
     connection.commit()
     cursor.close()

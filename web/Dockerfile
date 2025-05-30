@@ -6,4 +6,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-CMD ["streamlit", "run", "campaign-analysis.py", "--server.address=0.0.0.0"]
+CMD ["streamlit", "run", "campaign_analysis.py", "--server.address=0.0.0.0"]
