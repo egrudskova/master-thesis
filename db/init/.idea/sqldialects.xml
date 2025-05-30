@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<project version="4">
-  <component name="SqlDialectMappings">
-    <file url="file://$PROJECT_DIR$/01_schema.sql" dialect="Oracle" />
-    <file url="file://$PROJECT_DIR$/02_mock_data.sql" dialect="Oracle" />
-    <file url="file://$PROJECT_DIR$/03_check_mart.sql" dialect="Oracle" />
-  </component>
-</project>
