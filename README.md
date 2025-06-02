@@ -2,7 +2,7 @@
 # Master Thesis (Marketing Analytics Platform)
 
 ```
-thesis-analytics/
+master-thesis/
 │
 ├── airflow/                          # DAGs and Python scripts for ETL processes
 │   ├── dags/                         # Airflow DAG definitions
