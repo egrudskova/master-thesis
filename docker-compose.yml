@@ -57,7 +57,7 @@ services:
     image: prom/prometheus:latest
     container_name: prometheus
     volumes:
-      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
     ports:
       - "9090:9090"
     restart: always
@@ -85,17 +85,17 @@ services:
     env_file: .env
     environment:
       DATA_SOURCE_NAME: system/oracle@oracle-db:1521/XE
-    ports: ["9161:9161"]
+    ports: [ "9161:9161" ]
     restart: unless-stopped
     depends_on:
       - oracle-db
     volumes:
-      - ./custom-metrics.toml:/etc/custom-metrics.toml
+      - ./monitoring/custom-metrics.toml:/etc/custom-metrics.toml
     command: [ "--custom.metrics=/etc/custom-metrics.toml" ]
   redis-exporter:
     image: oliver006/redis_exporter:v1.54.0
     container_name: redis-exporter
-    command: ["--redis.addr=redis://redis:6379"]
+    command: [ "--redis.addr=redis://redis:6379" ]
     ports:
       - "9121:9121"
     restart: unless-stopped
