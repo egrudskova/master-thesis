@@ -1,4 +1,0 @@
-oracledb>=2.0
-pandas
-sqlalchemy
-oracledb

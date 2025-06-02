@@ -16,32 +16,50 @@ def get_last_update_date():
 
 
 def insert_new_data(last_update_date):
-    connection = get_db_connection()
-    cursor = connection.cursor()
+    conn   = get_db_connection()
+    cursor = conn.cursor()
 
     cursor.execute("""
-                   INSERT INTO CHECK_FULL
-                   SELECT o.order_date                     AS order_date,
-                          s.region                         AS region,
-                          o.customer_id                    AS customers,
-                          (SELECT COUNT(*)
-                           FROM ORDER_ITEMS i
-                           WHERE i.order_id = o.order_id)  AS items_count,
-                          o.total_amount / 1e6             AS revenue_mln,
-                          o.authorizations                 AS authorizations,
-                          o.temperature                    AS temperature,
-                          CASE
-                              WHEN o.promo_code_id IS NOT NULL
-                                  THEN 'with_promocode'
-                              ELSE 'without_promocode' END AS promo_usage
-                   FROM ORDERS o
-                            JOIN STORES s ON s.store_id = o.store_id
-                   WHERE o.order_date > :last_dt
-                   """, last_dt=last_update_date)
+        INSERT INTO CHECK_FULL (
+            "Date", "Order id", "Region", "Receipts",
+            "Sales (million RUB)", "Promotional Sales (mln RUB)",
+            "Authorizations", "Promocode", "Temperature (°C)",
+            "Campaign Name", "Campaign Type",
+            "Campaign Start", "Campaign End", "Target Audience"
+        )
+        SELECT
+            o.order_date                                     AS "Date",
+            o.order_id                                       AS "Order id",
+            s.region                                         AS "Region",
 
-    connection.commit()
+            ( SELECT COUNT(*) FROM ORDER_ITEMS i
+              WHERE i.order_id = o.order_id )                AS "Receipts",
+
+            o.total_amount       / 1e6                       AS "Sales (million RUB)",
+            o.promo_amount       / 1e6                       AS "Promotional Sales (mln RUB)",
+            o.authorizations                                AS "Authorizations",
+
+            CASE WHEN o.promo_code_id IS NOT NULL
+                 THEN 'With Promo' ELSE 'No Promo' END       AS "Promocode",
+
+            o.temperature                                   AS "Temperature (°C)",
+
+            mc.campaign_name                                AS "Campaign Name",
+            mc.campaign_type                                AS "Campaign Type",
+            mc.start_date                                   AS "Campaign Start",
+            mc.end_date                                     AS "Campaign End",
+            mc.target_audience                              AS "Target Audience"
+        FROM ORDERS o
+        JOIN STORES s
+          ON s.store_id = o.store_id
+        LEFT JOIN MARKETING_CAMPAIGNS mc
+          ON mc.promo_code_id = o.promo_code_id
+        WHERE o.order_date > :last_dt
+    """, last_dt=last_update_date)
+
+    conn.commit()
     cursor.close()
-    connection.close()
+    conn.close()
 
 
 def update_last_update_date():

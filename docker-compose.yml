@@ -1,12 +1,8 @@
-version: "3.9"
-
 services:
   oracle-db:
     image: gvenzl/oracle-xe:21-slim
     container_name: oracle-xe
-    environment:
-      ORACLE_PASSWORD: oracle
-      ORACLE_CHARACTERSET: AL32UTF8
+    env_file: .env
     volumes:
       - ./db/init:/container-entrypoint-initdb.d
     ports:
@@ -16,11 +12,6 @@ services:
     container_name: airflow
     restart: unless-stopped
     env_file: .env
-    environment:
-      AIRFLOW__CORE__EXECUTOR: SequentialExecutor
-      AIRFLOW__CORE__LOAD_EXAMPLES: "false"
-      AIRFLOW__CORE__SQL_ALCHEMY_CONN: sqlite:////opt/airflow/airflow.db
-      _PIP_ADDITIONAL_REQUIREMENTS: "cx_Oracle"
     volumes:
       - ./airflow/dags:/opt/airflow/dags
       - ./airflow/src:/opt/airflow/src
@@ -39,11 +30,9 @@ services:
     restart: unless-stopped
     ports:
       - "6379:6379"
-    command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
-    volumes:
-      - ./redis.conf:/usr/local/etc/redis/redis.conf:ro
-  web:
+  web1:
     build: ./web
+    image: web:latest
     container_name: campaign_web
     depends_on:
       - oracle-db
@@ -52,3 +41,63 @@ services:
     env_file: .env
     ports:
       - "8501:8501"
+  web2:
+    image: web:latest
+    container_name: campaign_web2
+    environment:
+      STREAMLIT_SERVER_PORT: 8502
+    ports:
+      - "8502:8502"
+    restart: always
+    depends_on:
+      - oracle-db
+      - redis
+    env_file: .env
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    restart: always
+    depends_on:
+      - web1
+      - redis
+      - redis-exporter
+      - oracle-db
+      - oracle-exporter
+  grafana:
+    image: grafana/grafana:11.0.0
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
+    env_file: .env
+    depends_on:
+      - prometheus
+    volumes:
+      - ./grafana/provisioning/datasources:/etc/grafana/provisioning/datasources:ro
+      - ./grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards:ro
+  oracle-exporter:
+    image: iamseth/oracledb_exporter:latest
+    container_name: oracle-exporter
+    env_file: .env
+    environment:
+      DATA_SOURCE_NAME: system/oracle@oracle-db:1521/XE
+    ports: ["9161:9161"]
+    restart: unless-stopped
+    depends_on:
+      - oracle-db
+    volumes:
+      - ./custom-metrics.toml:/etc/custom-metrics.toml
+    command: [ "--custom.metrics=/etc/custom-metrics.toml" ]
+  redis-exporter:
+    image: oliver006/redis_exporter:v1.54.0
+    container_name: redis-exporter
+    command: ["--redis.addr=redis://redis:6379"]
+    ports:
+      - "9121:9121"
+    restart: unless-stopped
+    depends_on:
+      - redis

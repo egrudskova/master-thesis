@@ -1,0 +1,62 @@
+{
+  "uid": "redis-cache",
+  "title": "Redis Cache",
+  "tags": [
+    "redis",
+    "cache"
+  ],
+  "schemaVersion": 38,
+  "version": 1,
+  "refresh": "5s",
+  "panels": [
+    {
+      "type": "timeseries",
+      "title": "Hit-rate (%)",
+      "gridPos": { "x": 0, "y": 0, "w": 24, "h": 8 },
+      "targets": [
+        {
+          "expr": "redis_cache_hit_rate",
+          "legendFormat": "{{instance}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "decimals": 1,
+          "mappings": [],
+          "thresholds": {
+            "mode": "percentage",
+            "steps": [
+              { "color": "red",    "value": 0 },
+              { "color": "orange", "value": 60 },
+              { "color": "green",  "value": 90 }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Hits / s",
+      "gridPos": { "x": 0, "y": 8, "w": 24, "h": 5 },
+      "targets": [
+        {
+          "expr": "rate(redis_cache_hit_total[1m])",
+          "legendFormat": "hits/s",
+          "refId": "B"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "decimals": 2,
+          "color": { "mode": "palette-classic" }
+        },
+        "overrides": []
+      },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }}
+    }
+  ]
+}

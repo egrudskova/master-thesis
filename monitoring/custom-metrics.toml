@@ -1,0 +1,5 @@
+[[metric]]
+context = "sysmetric"
+metricsdesc = { "value" = "Current value of Oracle system metric" }
+labels = ["metric_name"]
+request = "SELECT metric_name, value FROM V$SYSMETRIC"

@@ -70,13 +70,14 @@ CREATE TABLE ORDER_ITEMS
             REFERENCES PRODUCTS (product_id)
 );
 
-CREATE TABLE COMM_CHANNEL_STATS (
-    stat_date   DATE,
-    channel     VARCHAR2(40),
-    sent_cnt    NUMBER,
-    opened_cnt  NUMBER,
-    clicks_cnt  NUMBER,
-    unsub_cnt   NUMBER,
+CREATE TABLE COMM_CHANNEL_STATS
+(
+    stat_date  DATE,
+    channel    VARCHAR2(40),
+    sent_cnt   NUMBER,
+    opened_cnt NUMBER,
+    clicks_cnt NUMBER,
+    unsub_cnt  NUMBER,
     CONSTRAINT pk_comm PRIMARY KEY (stat_date, channel)
 );
 

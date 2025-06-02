@@ -1,8 +1,9 @@
 BEGIN
-   EXECUTE IMMEDIATE 'DROP TABLE CHECK_FULL';
+EXECUTE IMMEDIATE 'DROP TABLE CHECK_FULL';
 EXCEPTION
    WHEN OTHERS THEN
-      IF SQLCODE != -942 THEN RAISE; END IF;
+      IF SQLCODE != -942 THEN RAISE;
+END IF;
 END;
 /
 
@@ -35,25 +36,25 @@ FROM ORDERS o
 CREATE INDEX idx_check_full_date ON CHECK_FULL ("Date");
 
 BEGIN
-   EXECUTE IMMEDIATE 'DROP TABLE COMM_METRICS';
+EXECUTE IMMEDIATE 'DROP TABLE COMM_METRICS';
 EXCEPTION
    WHEN OTHERS THEN
-      IF SQLCODE != -942 THEN RAISE; END IF;
+      IF SQLCODE != -942 THEN RAISE;
+END IF;
 END;
 /
 
 CREATE TABLE COMM_METRICS AS
-SELECT
-       stat_date                             AS "Date",
-       channel                               AS "Channel",
-       sent_cnt                              AS "Sent",
-       opened_cnt                            AS "Opened",
-       clicks_cnt                            AS "Clicks",
-       unsub_cnt                             AS "Unsubscribed",
-       ROUND(opened_cnt / NULLIF(sent_cnt ,0) * 100, 2)  AS "Open Rate (%)",
-       ROUND(clicks_cnt / NULLIF(opened_cnt,0) * 100, 2) AS "Conversion (%)",
-       ROUND(unsub_cnt  / NULLIF(opened_cnt,0) * 100, 2) AS "Unsubscribe (%)"
-FROM   COMM_CHANNEL_STATS;
+SELECT stat_date                                          AS "Date",
+       channel                                            AS "Channel",
+       sent_cnt                                           AS "Sent",
+       opened_cnt                                         AS "Opened",
+       clicks_cnt                                         AS "Clicks",
+       unsub_cnt                                          AS "Unsubscribed",
+       ROUND(opened_cnt / NULLIF(sent_cnt, 0) * 100, 2)   AS "Open Rate (%)",
+       ROUND(clicks_cnt / NULLIF(opened_cnt, 0) * 100, 2) AS "Conversion (%)",
+       ROUND(unsub_cnt / NULLIF(opened_cnt, 0) * 100, 2)  AS "Unsubscribe (%)"
+FROM COMM_CHANNEL_STATS;
 
 ALTER TABLE COMM_METRICS
     ADD CONSTRAINT pk_comm_metrics
